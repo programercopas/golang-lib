@@ -4,9 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
-	"go.opentelemetry.io/otel/trace"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -14,6 +11,10 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const logFormat = `date=%s, method=%s, url=%s,  response_time=%s`
@@ -24,6 +25,8 @@ var logLevel = flag.String("log_level", "info", "set log level")
 var version = flag.Bool("ver", false, "for version")
 
 var stdoutLog, stderrLog string
+
+var fnTrace bool
 
 func init() {
 	flag.StringVar(&stdoutLog, "loginfo", "", "log file for stdout")
@@ -52,6 +55,10 @@ func GetLogger(ctx context.Context, pkg, fnName string) *logrus.Entry {
 		"package":  pkg,
 		"source":   file,
 	})
+}
+
+func EnableFnTrace() {
+	fnTrace = true
 }
 
 func LogInit() {
@@ -402,7 +409,7 @@ func WithContext(ctx context.Context) *logrus.Entry {
 }
 
 func WithFields(fields Fields) *logrus.Entry {
-	_, file, line, ok := runtime.Caller(1)
+	pc, file, line, ok := runtime.Caller(1)
 	if !ok {
 		file = "<???>"
 		line = 1
@@ -412,6 +419,12 @@ func WithFields(fields Fields) *logrus.Entry {
 	}
 
 	fields["source"] = fmt.Sprintf("%s:%d", file, line)
+
+	if fnTrace {
+		funcname := runtime.FuncForPC(pc).Name()
+		fn := funcname[strings.LastIndex(funcname, ".")+1:]
+		fields["function"] = fmt.Sprintf("%s", fn)
+	}
 
 	logrusFields := logrus.Fields{}
 
