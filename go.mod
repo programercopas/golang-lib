@@ -12,6 +12,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/valyala/fasthttp v1.45.0 // indirect
 	go.opentelemetry.io/otel v1.14.0 // indirect
+	golang.org/x/crypto v0.7.0 // indirect
 	google.golang.org/grpc v1.54.0 // indirect
 	gopkg.in/tylerb/graceful.v1 v1.2.15 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
